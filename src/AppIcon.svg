@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 배경: 다크 블루 → 퍼플 그라데이션 (Apple 스타일) -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1a3e"/>
+      <stop offset="50%" stop-color="#2d1b69"/>
+      <stop offset="100%" stop-color="#0f0c29"/>
+    </linearGradient>
+    
+    <!-- 액센트: 시안 → 마젠타 (오디오 스펙트럼 느낌) -->
+    <linearGradient id="waveGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00d9ff"/>
+      <stop offset="100%" stop-color="#00ff88"/>
+    </linearGradient>
+    
+    <linearGradient id="waveGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff00aa"/>
+      <stop offset="100%" stop-color="#ff8800"/>
+    </linearGradient>
+    
+    <linearGradient id="mergedGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#ffe699"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    
+    <!-- 그림자 -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- 둥근 사각형 마스크 (macOS Big Sur+ 아이콘 스타일) -->
+    <clipPath id="appShape">
+      <rect x="80" y="80" width="864" height="864" rx="192" ry="192"/>
+    </clipPath>
+  </defs>
+  
+  <!-- 배경 -->
+  <g clip-path="url(#appShape)">
+    <rect width="1024" height="1024" fill="url(#bgGrad)"/>
+    
+    <!-- 미세한 그리드 패턴 (스튜디오 분위기) -->
+    <g opacity="0.05" stroke="#ffffff" stroke-width="1">
+      <line x1="0" y1="256" x2="1024" y2="256"/>
+      <line x1="0" y1="512" x2="1024" y2="512"/>
+      <line x1="0" y1="768" x2="1024" y2="768"/>
+      <line x1="256" y1="0" x2="256" y2="1024"/>
+      <line x1="512" y1="0" x2="512" y2="1024"/>
+      <line x1="768" y1="0" x2="768" y2="1024"/>
+    </g>
+    
+    <!-- 상단 웨이브 1 (시안-그린) -->
+    <g transform="translate(0, 280)" filter="url(#glow)">
+      <path d="M 120 0 
+               Q 200 -60, 280 0 
+               T 440 0 
+               T 600 0 
+               T 760 0 
+               T 920 0" 
+            stroke="url(#waveGrad1)" 
+            stroke-width="18" 
+            fill="none" 
+            stroke-linecap="round"
+            opacity="0.9"/>
+      <path d="M 120 0 
+               Q 200 -30, 280 0 
+               T 440 0 
+               T 600 0 
+               T 760 0 
+               T 920 0" 
+            stroke="url(#waveGrad1)" 
+            stroke-width="8" 
+            fill="none" 
+            stroke-linecap="round"
+            opacity="0.5"/>
+    </g>
+    
+    <!-- 하단 웨이브 2 (마젠타-오렌지) -->
+    <g transform="translate(0, 480)" filter="url(#glow)">
+      <path d="M 120 0 
+               Q 200 50, 280 0 
+               T 440 0 
+               T 600 0 
+               T 760 0 
+               T 920 0" 
+            stroke="url(#waveGrad2)" 
+            stroke-width="18" 
+            fill="none" 
+            stroke-linecap="round"
+            opacity="0.9"/>
+      <path d="M 120 0 
+               Q 200 25, 280 0 
+               T 440 0 
+               T 600 0 
+               T 760 0 
+               T 920 0" 
+            stroke="url(#waveGrad2)" 
+            stroke-width="8" 
+            fill="none" 
+            stroke-linecap="round"
+            opacity="0.5"/>
+    </g>
+    
+    <!-- 중앙 결과 웨이브 (밝은 흰색-골드, 두 웨이브가 합쳐진 결과) -->
+    <g transform="translate(0, 700)" filter="url(#glow)">
+      <path d="M 120 0 
+               Q 180 -45, 240 0 
+               Q 300 45, 360 0
+               Q 420 -55, 480 0
+               Q 540 50, 600 0
+               Q 660 -40, 720 0
+               Q 780 45, 840 0
+               Q 900 -35, 920 0" 
+            stroke="url(#mergedGrad)" 
+            stroke-width="24" 
+            fill="none" 
+            stroke-linecap="round"/>
+    </g>
+    
+    <!-- 좌우 합산 화살표 (+ 기호) -->
+    <g transform="translate(512, 600)" opacity="0.7">
+      <circle cx="0" cy="0" r="55" fill="#ffffff" opacity="0.15"/>
+      <path d="M -28 0 L 28 0 M 0 -28 L 0 28" 
+            stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
+    </g>
+    
+    <!-- 좌상단 텍스트 라벨 (WAV) -->
+    <g transform="translate(150, 200)">
+      <text x="0" y="0" 
+            font-family="-apple-system, SF Pro Display, Helvetica, sans-serif" 
+            font-size="64" 
+            font-weight="900" 
+            fill="#ffffff" 
+            opacity="0.95"
+            letter-spacing="2">WAV</text>
+      <text x="0" y="55" 
+            font-family="-apple-system, SF Pro Text, Helvetica, sans-serif" 
+            font-size="22" 
+            font-weight="500" 
+            fill="#00d9ff" 
+            opacity="0.85"
+            letter-spacing="4">24bit · 48kHz</text>
+    </g>
+    
+    <!-- 우상단 슬라이더 모티프 -->
+    <g transform="translate(780, 180)" opacity="0.4">
+      <rect x="0" y="0" width="6" height="160" rx="3" fill="#ffffff"/>
+      <rect x="30" y="0" width="6" height="160" rx="3" fill="#ffffff"/>
+      <rect x="60" y="0" width="6" height="160" rx="3" fill="#ffffff"/>
+      <!-- 슬라이더 노브 -->
+      <circle cx="3" cy="50" r="12" fill="#00d9ff" opacity="0.9"/>
+      <circle cx="33" cy="90" r="12" fill="#ff00aa" opacity="0.9"/>
+      <circle cx="63" cy="70" r="12" fill="#00ff88" opacity="0.9"/>
+    </g>
+    
+    <!-- 미세한 반사광 효과 (상단) -->
+    <rect x="80" y="80" width="864" height="200" rx="192" ry="192" 
+          fill="url(#bgGrad)" opacity="0"/>
+    <ellipse cx="512" cy="120" rx="380" ry="60" fill="#ffffff" opacity="0.08"/>
+  </g>
+  
+  <!-- 외곽 미세한 보더 (입체감) -->
+  <rect x="80" y="80" width="864" height="864" rx="192" ry="192" 
+        fill="none" stroke="#ffffff" stroke-width="2" opacity="0.1"/>
+</svg>
