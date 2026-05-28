@@ -1,1 +1,149 @@
+name: Build, Test and Release
 
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-14    # Apple Silicon (M1) 러너
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔍 환경 정보
+        run: |
+          echo "macOS:" && sw_vers
+          echo ""
+          echo "Architecture: $(uname -m)"
+          echo "Python: $(python3 --version)"
+          echo "Bash: $BASH_VERSION"
+
+      - name: 🎨 아이콘 변환 도구 설치
+        run: |
+          brew install librsvg || echo "librsvg 이미 설치됨"
+
+      - name: 📥 FFmpeg 정적 빌드 다운로드
+        run: |
+          chmod +x scripts/download_ffmpeg.sh
+          ./scripts/download_ffmpeg.sh
+
+      - name: 🔍 FFmpeg 동작 확인
+        run: |
+          ls -lh vendor/
+          ./vendor/ffmpeg -version | head -3
+          ./vendor/ffprobe -version | head -3
+
+      - name: 🔨 .app 빌드
+        run: |
+          chmod +x scripts/build_app.sh
+          ./scripts/build_app.sh
+
+      - name: 🧪 통합 테스트
+        run: |
+          chmod +x tests/integration_test.sh
+          ./tests/integration_test.sh
+
+      - name: 🏷️ 버전 결정
+        id: version
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            VERSION="dev-$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA:0:7}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📌 빌드 버전: $VERSION"
+
+      - name: 📦 .app을 ZIP으로 패키징
+        run: |
+          cd build
+          ZIP_NAME="AudioMixer-v${{ steps.version.outputs.version }}.zip"
+          
+          # ditto: macOS .app 메타데이터 보존하면서 압축
+          ditto -c -k --sequesterRsrc --keepParent "Audio Mixer.app" "$ZIP_NAME"
+          
+          ls -lh "$ZIP_NAME"
+          
+          # 검증: ZIP 풀어서 다시 테스트
+          mkdir -p verify
+          cd verify
+          ditto -x -k "../$ZIP_NAME" .
+          if [ -d "Audio Mixer.app" ]; then
+            echo "✅ ZIP 추출 검증 통과"
+          else
+            echo "❌ ZIP 추출 실패"
+            exit 1
+          fi
+
+      - name: 📤 Artifact 업로드 (모든 빌드)
+        uses: actions/upload-artifact@v4
+        with:
+          name: AudioMixer-${{ steps.version.outputs.version }}
+          path: build/AudioMixer-*.zip
+          retention-days: 30
+
+      - name: 🚀 GitHub Release 생성 (태그 push 시에만)
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Audio Mixer v${{ steps.version.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+          body: |
+            ## 🎧 Audio Mixer v${{ steps.version.outputs.version }}
+
+            Finder 우클릭 또는 .app에 드래그앤드롭으로 오디오 파일들을 **24bit/48kHz Stereo WAV**로 믹스다운하는 도구입니다.
+
+            ### ✨ 특징
+            - **FFmpeg 완전 동봉** — 별도 설치 불필요, 폐쇄망 OK
+            - 두 가지 사용 방법: 우클릭 메뉴 또는 파일 드롭
+            - 24-bit / 48kHz / Stereo PCM WAV 정확 출력
+            - WAV/MP3/FLAC/AIFF/M4A 등 자동 디코딩
+            - 한글 파일명 안전 처리
+            - 자동 게인 보정 (클리핑 방지)
+
+            ### 📥 설치
+
+            1. 아래 `AudioMixer-v${{ steps.version.outputs.version }}.zip` 다운로드
+            2. 압축 풀기
+            3. `Audio Mixer.app`을 `/응용 프로그램` 폴더로 드래그
+            4. 첫 실행 시 **우클릭 → 열기** (Apple 서명 우회)
+
+            ### 🎬 사용 방법
+
+            **방법 1: 드래그앤드롭**
+            - Finder에서 오디오 파일들 선택 → `Audio Mixer.app` 위로 드래그
+
+            **방법 2: 우클릭 메뉴**
+            - 파일 선택 → 우클릭 → **서비스** → **WAV로 믹스다운**
+            - 처음에는 시스템 설정 → 키보드 → 키보드 단축키 → 서비스에서 활성화
+
+            **방법 3: 직접 실행**
+            - `Audio Mixer.app` 더블클릭 → 파일 선택 다이얼로그
+
+            ### 📋 출력
+            - 위치: 첫 입력 파일과 같은 폴더
+            - 이름: `[MIX] 원본파일명.wav` (재실행 시 `[MIX_2]`, `[MIX_3]` ...)
+            - 사양: **24-bit / 48,000Hz / Stereo PCM**
+
+            ### 🐛 문제 해결
+            로그: `/tmp/audiomixer.log` 확인
+          files: build/AudioMixer-*.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
